@@ -37,8 +37,10 @@ CREATE TABLE `users` (
 	`username` text NOT NULL,
 	`password` text,
 	`is_admin` integer DEFAULT false,
-	`classes` text,
-	`role` text,
+	`primary_class` text NOT NULL,
+	`secondary_class` text,
+	`primary_role` text NOT NULL,
+	`secondary_role` text,
 	`region` text NOT NULL,
 	`created_at` integer
 );

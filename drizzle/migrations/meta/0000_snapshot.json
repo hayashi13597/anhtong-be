@@ -1,7 +1,7 @@
 {
   "version": "6",
   "dialect": "sqlite",
-  "id": "c10d1268-b325-435b-b419-157353c72aa6",
+  "id": "db126024-777a-4d28-bba4-5123926bc0c8",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "tables": {
     "event_signups": {
@@ -265,15 +265,29 @@
           "autoincrement": false,
           "default": false
         },
-        "classes": {
-          "name": "classes",
+        "primary_class": {
+          "name": "primary_class",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "secondary_class": {
+          "name": "secondary_class",
           "type": "text",
           "primaryKey": false,
           "notNull": false,
           "autoincrement": false
         },
-        "role": {
-          "name": "role",
+        "primary_role": {
+          "name": "primary_role",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "secondary_role": {
+          "name": "secondary_role",
           "type": "text",
           "primaryKey": false,
           "notNull": false,

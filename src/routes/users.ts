@@ -1,6 +1,7 @@
 import { eq } from "drizzle-orm";
 import { Hono } from "hono";
-import { users } from "../db/schema";
+import type { ClassType } from "../db/schema";
+import { classEnum, users } from "../db/schema";
 import type { Env } from "../index";
 import { adminMiddleware, authMiddleware } from "../lib/auth";
 import { createDb } from "../lib/db";
@@ -26,8 +27,10 @@ usersRouter.get("/", authMiddleware(), adminMiddleware(), async (c) => {
     columns: {
       id: true,
       username: true,
-      classes: true,
-      role: true,
+      primaryClass: true,
+      secondaryClass: true,
+      primaryRole: true,
+      secondaryRole: true,
       region: true,
       isAdmin: true,
       createdAt: true,
@@ -47,8 +50,10 @@ usersRouter.get("/:id", authMiddleware(), async (c) => {
     columns: {
       id: true,
       username: true,
-      classes: true,
-      role: true,
+      primaryClass: true,
+      secondaryClass: true,
+      primaryRole: true,
+      secondaryRole: true,
       region: true,
       isAdmin: true,
       createdAt: true,
@@ -67,10 +72,13 @@ usersRouter.put("/:id", authMiddleware(), async (c) => {
   const db = createDb(c.env.DB);
   const currentUser = c.get("user");
   const userId = parseInt(c.req.param("id"));
-  const { classes, role } = await c.req.json<{
-    classes?: string;
-    role?: "dps" | "healer" | "tank";
-  }>();
+  const { primaryClass, secondaryClass, primaryRole, secondaryRole } =
+    await c.req.json<{
+      primaryClass?: ClassType;
+      secondaryClass?: ClassType;
+      primaryRole?: "dps" | "healer" | "tank";
+      secondaryRole?: "dps" | "healer" | "tank";
+    }>();
 
   // Check permission: own profile or admin for same region
   if (currentUser.id !== userId) {
@@ -88,22 +96,44 @@ usersRouter.put("/:id", authMiddleware(), async (c) => {
     }
   }
 
-  if (role && !["dps", "healer", "tank"].includes(role)) {
-    return c.json({ error: "Role must be 'dps', 'healer', or 'tank'" }, 400);
+  if (primaryClass && !classEnum.includes(primaryClass)) {
+    return c.json({ error: "Invalid primary class" }, 400);
+  }
+
+  if (secondaryClass && !classEnum.includes(secondaryClass)) {
+    return c.json({ error: "Invalid secondary class" }, 400);
+  }
+
+  if (primaryRole && !["dps", "healer", "tank"].includes(primaryRole)) {
+    return c.json(
+      { error: "Primary role must be 'dps', 'healer', or 'tank'" },
+      400,
+    );
+  }
+
+  if (secondaryRole && !["dps", "healer", "tank"].includes(secondaryRole)) {
+    return c.json(
+      { error: "Secondary role must be 'dps', 'healer', or 'tank'" },
+      400,
+    );
   }
 
   const [updatedUser] = await db
     .update(users)
     .set({
-      ...(classes !== undefined && { classes }),
-      ...(role && { role }),
+      ...(primaryClass !== undefined && { primaryClass }),
+      ...(secondaryClass !== undefined && { secondaryClass }),
+      ...(primaryRole && { primaryRole }),
+      ...(secondaryRole !== undefined && { secondaryRole }),
     })
     .where(eq(users.id, userId))
     .returning({
       id: users.id,
       username: users.username,
-      classes: users.classes,
-      role: users.role,
+      primaryClass: users.primaryClass,
+      secondaryClass: users.secondaryClass,
+      primaryRole: users.primaryRole,
+      secondaryRole: users.secondaryRole,
       region: users.region,
       isAdmin: users.isAdmin,
     });

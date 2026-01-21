@@ -1,6 +1,7 @@
 import { and, eq } from "drizzle-orm";
 import { Hono } from "hono";
-import { eventSignups, events, users } from "../db/schema";
+import type { ClassType } from "../db/schema";
+import { classEnum, eventSignups, events, users } from "../db/schema";
 import type { Env } from "../index";
 import { authMiddleware, generateToken, verifyPassword } from "../lib/auth";
 import { createDb } from "../lib/db";
@@ -64,23 +65,55 @@ auth.post("/login", async (c) => {
 auth.post("/signup", async (c) => {
   const body = await c.req.json<{
     username: string;
-    classes?: string;
-    role?: "dps" | "healer" | "tank";
+    primaryClass: ClassType;
+    secondaryClass?: ClassType;
+    primaryRole: "dps" | "healer" | "tank";
+    secondaryRole?: "dps" | "healer" | "tank";
     region: "vn" | "na";
   }>();
 
-  const { username, classes, role, region } = body;
+  const {
+    username,
+    primaryClass,
+    secondaryClass,
+    primaryRole,
+    secondaryRole,
+    region,
+  } = body;
 
-  if (!username || !region) {
-    return c.json({ error: "Username and region are required" }, 400);
+  if (!username || !region || !primaryClass || !primaryRole) {
+    return c.json(
+      {
+        error: "Username, region, primary class, and primary role are required",
+      },
+      400,
+    );
+  }
+
+  if (!classEnum.includes(primaryClass)) {
+    return c.json({ error: "Invalid primary class" }, 400);
+  }
+
+  if (secondaryClass && !classEnum.includes(secondaryClass)) {
+    return c.json({ error: "Invalid secondary class" }, 400);
   }
 
   if (!["vn", "na"].includes(region)) {
     return c.json({ error: "Region must be 'vn' or 'na'" }, 400);
   }
 
-  if (role && !["dps", "healer", "tank"].includes(role)) {
-    return c.json({ error: "Role must be 'dps', 'healer', or 'tank'" }, 400);
+  if (!["dps", "healer", "tank"].includes(primaryRole)) {
+    return c.json(
+      { error: "Primary role must be 'dps', 'healer', or 'tank'" },
+      400,
+    );
+  }
+
+  if (secondaryRole && !["dps", "healer", "tank"].includes(secondaryRole)) {
+    return c.json(
+      { error: "Secondary role must be 'dps', 'healer', or 'tank'" },
+      400,
+    );
   }
 
   const db = createDb(c.env.DB);
@@ -101,17 +134,17 @@ auth.post("/signup", async (c) => {
   });
 
   if (user) {
-    // User exists - update their info if provided
-    if (classes !== undefined || role) {
-      [user] = await db
-        .update(users)
-        .set({
-          ...(classes !== undefined && { classes }),
-          ...(role && { role }),
-        })
-        .where(eq(users.id, user.id))
-        .returning();
-    }
+    // User exists - update their info
+    [user] = await db
+      .update(users)
+      .set({
+        primaryClass,
+        secondaryClass: secondaryClass || null,
+        primaryRole,
+        secondaryRole: secondaryRole || null,
+      })
+      .where(eq(users.id, user.id))
+      .returning();
 
     // Check if user's region matches
     if (user.region !== region) {
@@ -127,8 +160,10 @@ auth.post("/signup", async (c) => {
       .values({
         username,
         password: null,
-        classes: classes || null,
-        role: role || null,
+        primaryClass,
+        secondaryClass: secondaryClass || null,
+        primaryRole,
+        secondaryRole: secondaryRole || null,
         region,
         isAdmin: false,
       })
@@ -150,8 +185,10 @@ auth.post("/signup", async (c) => {
         id: user.id,
         username: user.username,
         region: user.region,
-        classes: user.classes,
-        role: user.role,
+        primaryClass: user.primaryClass,
+        secondaryClass: user.secondaryClass,
+        primaryRole: user.primaryRole,
+        secondaryRole: user.secondaryRole,
       },
       event: {
         id: event.id,
@@ -173,8 +210,10 @@ auth.post("/signup", async (c) => {
         id: user.id,
         username: user.username,
         region: user.region,
-        classes: user.classes,
-        role: user.role,
+        primaryClass: user.primaryClass,
+        secondaryClass: user.secondaryClass,
+        primaryRole: user.primaryRole,
+        secondaryRole: user.secondaryRole,
       },
       event: {
         id: event.id,
@@ -202,8 +241,10 @@ auth.get("/me", authMiddleware(), async (c) => {
     id: user.id,
     username: user.username,
     region: user.region,
-    classes: user.classes,
-    role: user.role,
+    primaryClass: user.primaryClass,
+    secondaryClass: user.secondaryClass,
+    primaryRole: user.primaryRole,
+    secondaryRole: user.secondaryRole,
     isAdmin: user.isAdmin,
     createdAt: user.createdAt,
   });
