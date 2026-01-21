@@ -8,6 +8,7 @@
       "binding": "DB",
       "database_name": "anhtong-guild-db",
       "database_id": "832666f6-3b89-4a3d-984b-6bb412a09d3c",
+      "migrations_dir": "drizzle/migrations",
     },
   ],
   // Cron trigger: runs every Monday at 00:00 UTC
