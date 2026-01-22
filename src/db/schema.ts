@@ -28,8 +28,12 @@ export const users = sqliteTable("users", {
   username: text("username").notNull().unique(),
   password: text("password"),
   isAdmin: integer("is_admin", { mode: "boolean" }).default(false),
-  primaryClass: text("primary_class", { enum: classEnum }).notNull(),
-  secondaryClass: text("secondary_class", { enum: classEnum }),
+  primaryClass: text("primary_class", { mode: "json" })
+    .notNull()
+    .$type<[ClassType, ClassType]>(),
+  secondaryClass: text("secondary_class", { mode: "json" }).$type<
+    [ClassType, ClassType]
+  >(),
   primaryRole: text("primary_role", {
     enum: ["dps", "healer", "tank"],
   }).notNull(),

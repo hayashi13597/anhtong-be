@@ -8,12 +8,12 @@ A simple guild event management API built with Hono and Cloudflare Workers (D1 d
 - **Team Management**: Admin can create, update, delete teams
 - **User Assignment**: Admin assigns users to teams
 - **Event Signup**: Users fill a simple form to sign up for weekly events (no registration needed)
-- **Pre-seeded Admins**: `adminvn` and `adminna` with password `admin123@`
+- **Pre-seeded Admins**: `adminvn` and `adminna`
 
 ## Workflow
 
 1. **Events are auto-created** every Monday for VN and NA regions
-2. **Users sign up** by filling a simple form (username, classes, role, region) - no password needed
+2. **Users sign up** by filling a simple form (username, primaryClass, secondaryClass, primaryRole, secondaryRole, region) - no password needed
 3. **Returning users** are recognized by username and linked to the new event
 4. **Admins login** to manage teams and assign users
 
@@ -46,7 +46,7 @@ curl -X POST http://127.0.0.1:8787/seed
 **Admin Login:**
 
 ```json
-{ "username": "adminvn", "password": "admin123@" }
+{ "username": "adminvn", "password": "password" }
 ```
 
 **Event Signup (for regular users):**
@@ -54,13 +54,14 @@ curl -X POST http://127.0.0.1:8787/seed
 ```json
 {
   "username": "player1",
-  "classes": "Warrior, Mage",
-  "role": "dps",
+  "primaryClass": "strategicSword",
+  "primaryRole": "dps",
   "region": "vn"
 }
 ```
 
-- `role`: "dps" | "healer" | "tank"
+- `primaryClass`: ClassType
+- `primaryRole`: "dps" | "healer" | "tank"
 - `region`: "vn" | "na"
 - If username exists, user info is updated and linked to current event
 - If username is new, a new user is created and linked to current event
@@ -119,7 +120,7 @@ Authorization: Bearer <token>
 
 ## Cron Trigger
 
-Events are auto-created every Monday at 00:00 UTC via Cloudflare Cron Trigger.
+Events are auto-created every Tuesday at 12:00 UTC via Cloudflare Cron Trigger.
 
 To test locally:
 
@@ -131,7 +132,7 @@ curl http://127.0.0.1:8787/cdn-cgi/handler/scheduled
 
 ```bash
 # Apply migrations to remote D1
-wrangler d1 execute anhtong-guild-db --remote --file=./drizzle/migrations/0000_initial_schema.sql
+wrangler d1 execute anhtong-guild-db --remote --file=./drizzle/migrations/0000_plain_silver_samurai.sql
 
 # Deploy worker
 bun run deploy

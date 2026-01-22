@@ -11,9 +11,9 @@
       "migrations_dir": "drizzle/migrations",
     },
   ],
-  // Cron trigger: runs every Monday at 00:00 UTC
+  // Cron trigger: runs every Tuesday at 12:00 UTC (noon)
   "triggers": {
-    "crons": ["0 0 * * 1"],
+    "crons": ["0 12 * * 2"],
   },
   // "compatibility_flags": [
   //   "nodejs_compat"

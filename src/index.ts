@@ -1,6 +1,8 @@
+import { and, eq } from "drizzle-orm";
 import { Hono } from "hono";
 import { cors } from "hono/cors";
 import { logger } from "hono/logger";
+import { events, teams } from "./db/schema";
 import { createDb } from "./lib/db";
 import authRoutes from "./routes/auth";
 import eventsRoutes from "./routes/events";
@@ -51,10 +53,6 @@ export default {
   async scheduled(event: ScheduledEvent, env: Env, ctx: ExecutionContext) {
     // This runs on schedule (configured in wrangler.jsonc)
     const db = createDb(env.DB);
-
-    // Import the event creation logic
-    const { events, teams } = await import("./db/schema");
-    const { eq, and } = await import("drizzle-orm");
 
     // Use UTC to avoid timezone issues
     const now = new Date();

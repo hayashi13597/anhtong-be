@@ -23,6 +23,8 @@ export async function seedAdminUsers(db: Database) {
         password: hashedPassword,
         isAdmin: true,
         region: admin.region,
+        primaryClass: ["strategicSword", "heavenquakerSpear"],
+        primaryRole: "dps",
       });
       console.log(`Created admin user: ${admin.username}`);
     } else {

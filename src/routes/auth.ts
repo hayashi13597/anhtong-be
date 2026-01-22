@@ -65,8 +65,8 @@ auth.post("/login", async (c) => {
 auth.post("/signup", async (c) => {
   const body = await c.req.json<{
     username: string;
-    primaryClass: ClassType;
-    secondaryClass?: ClassType;
+    primaryClass: [ClassType, ClassType];
+    secondaryClass?: [ClassType, ClassType];
     primaryRole: "dps" | "healer" | "tank";
     secondaryRole?: "dps" | "healer" | "tank";
     region: "vn" | "na";
@@ -90,12 +90,27 @@ auth.post("/signup", async (c) => {
     );
   }
 
-  if (!classEnum.includes(primaryClass)) {
+  if (!Array.isArray(primaryClass) || primaryClass.length !== 2) {
+    return c.json(
+      { error: "Primary class must be an array of exactly 2 classes" },
+      400,
+    );
+  }
+
+  if (!primaryClass.every((cls) => classEnum.includes(cls))) {
     return c.json({ error: "Invalid primary class" }, 400);
   }
 
-  if (secondaryClass && !classEnum.includes(secondaryClass)) {
-    return c.json({ error: "Invalid secondary class" }, 400);
+  if (secondaryClass) {
+    if (!Array.isArray(secondaryClass) || secondaryClass.length !== 2) {
+      return c.json(
+        { error: "Secondary class must be an array of exactly 2 classes" },
+        400,
+      );
+    }
+    if (!secondaryClass.every((cls) => classEnum.includes(cls))) {
+      return c.json({ error: "Invalid secondary class" }, 400);
+    }
   }
 
   if (!["vn", "na"].includes(region)) {
