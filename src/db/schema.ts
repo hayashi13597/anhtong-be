@@ -6,13 +6,38 @@ import {
   text,
 } from "drizzle-orm/sqlite-core";
 
+export const classEnum = [
+  "strategicSword",
+  "heavenquakerSpear",
+  "namelessSword",
+  "namelessSpear",
+  "vernalUmbrella",
+  "inkwellFan",
+  "soulshadeUmbrella",
+  "panaceaFan",
+  "thundercryBlade",
+  "stormreakerSpear",
+  "infernalTwinblades",
+  "mortalRopeDart",
+] as const;
+
+export type ClassType = (typeof classEnum)[number];
+
 export const users = sqliteTable("users", {
   id: integer("id").primaryKey({ autoIncrement: true }),
   username: text("username").notNull().unique(),
   password: text("password"),
   isAdmin: integer("is_admin", { mode: "boolean" }).default(false),
-  classes: text("classes"),
-  role: text("role", { enum: ["dps", "healer", "tank"] }),
+  primaryClass: text("primary_class", { mode: "json" })
+    .notNull()
+    .$type<[ClassType, ClassType]>(),
+  secondaryClass: text("secondary_class", { mode: "json" }).$type<
+    [ClassType, ClassType]
+  >(),
+  primaryRole: text("primary_role", {
+    enum: ["dps", "healer", "tank"],
+  }).notNull(),
+  secondaryRole: text("secondary_role", { enum: ["dps", "healer", "tank"] }),
   region: text("region", { enum: ["vn", "na"] }).notNull(),
   createdAt: integer("created_at", { mode: "timestamp" }).$defaultFn(
     () => new Date(),
