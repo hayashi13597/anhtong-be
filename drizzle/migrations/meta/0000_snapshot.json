@@ -1,7 +1,7 @@
 {
   "version": "6",
   "dialect": "sqlite",
-  "id": "937f2be7-9fb3-4802-b34d-567339a41f70",
+  "id": "7ead6f9c-22cd-4a39-9fc5-e26d93d38370",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "tables": {
     "event_signups": {
@@ -26,6 +26,13 @@
           "type": "text",
           "primaryKey": false,
           "notNull": true,
+          "autoincrement": false
+        },
+        "notes": {
+          "name": "notes",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
           "autoincrement": false
         },
         "signed_up_at": {

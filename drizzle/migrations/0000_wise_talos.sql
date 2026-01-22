@@ -2,6 +2,7 @@ CREATE TABLE `event_signups` (
 	`event_id` integer NOT NULL,
 	`user_id` integer NOT NULL,
 	`time_slots` text NOT NULL,
+	`notes` text,
 	`signed_up_at` integer,
 	PRIMARY KEY(`event_id`, `user_id`),
 	FOREIGN KEY (`event_id`) REFERENCES `events`(`id`) ON UPDATE no action ON DELETE cascade,
