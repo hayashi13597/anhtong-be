@@ -1,6 +1,7 @@
 CREATE TABLE `event_signups` (
 	`event_id` integer NOT NULL,
 	`user_id` integer NOT NULL,
+	`time_slots` text NOT NULL,
 	`signed_up_at` integer,
 	PRIMARY KEY(`event_id`, `user_id`),
 	FOREIGN KEY (`event_id`) REFERENCES `events`(`id`) ON UPDATE no action ON DELETE cascade,
@@ -28,6 +29,7 @@ CREATE TABLE `teams` (
 	`event_id` integer NOT NULL,
 	`name` text NOT NULL,
 	`description` text,
+	`day` text DEFAULT 'saturday' NOT NULL,
 	`created_at` integer,
 	FOREIGN KEY (`event_id`) REFERENCES `events`(`id`) ON UPDATE no action ON DELETE cascade
 );

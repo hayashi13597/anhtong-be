@@ -63,10 +63,11 @@ teamsRouter.get("/:id", authMiddleware(), async (c) => {
 teamsRouter.post("/", authMiddleware(), adminMiddleware(), async (c) => {
   const db = createDb(c.env.DB);
   const user = c.get("user");
-  const { eventId, name, description } = await c.req.json<{
+  const { eventId, name, description, day } = await c.req.json<{
     eventId: number;
     name: string;
     description?: string;
+    day?: "saturday" | "sunday";
   }>();
 
   if (!eventId || !name) {
@@ -92,6 +93,7 @@ teamsRouter.post("/", authMiddleware(), adminMiddleware(), async (c) => {
       eventId,
       name,
       description: description || null,
+      day: day || "saturday",
     })
     .returning();
 
@@ -103,9 +105,10 @@ teamsRouter.put("/:id", authMiddleware(), adminMiddleware(), async (c) => {
   const db = createDb(c.env.DB);
   const user = c.get("user");
   const teamId = parseInt(c.req.param("id"));
-  const { name, description } = await c.req.json<{
+  const { name, description, day } = await c.req.json<{
     name?: string;
     description?: string;
+    day?: "saturday" | "sunday";
   }>();
 
   // Get team with its event
@@ -129,6 +132,7 @@ teamsRouter.put("/:id", authMiddleware(), adminMiddleware(), async (c) => {
     .set({
       ...(name && { name }),
       ...(description !== undefined && { description }),
+      ...(day && { day }),
     })
     .where(eq(teams.id, teamId))
     .returning();

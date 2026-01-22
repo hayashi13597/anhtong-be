@@ -68,6 +68,9 @@ export const teams = sqliteTable("teams", {
     .references(() => events.id, { onDelete: "cascade" }),
   name: text("name").notNull(),
   description: text("description"),
+  day: text("day", { enum: ["saturday", "sunday"] })
+    .notNull()
+    .default("saturday"),
   createdAt: integer("created_at", { mode: "timestamp" }).$defaultFn(
     () => new Date(),
   ),
@@ -96,6 +99,24 @@ export const teamMembers = sqliteTable(
 export type TeamMember = typeof teamMembers.$inferSelect;
 export type NewTeamMember = typeof teamMembers.$inferInsert;
 
+// Time slot type for event registration
+export const timeSlots = [
+  "sat_19:30-20:00",
+  "sat_20:00-20:30",
+  "sat_20:30-21:00",
+  "sat_21:00-21:30",
+  "sat_21:30-22:00",
+  "sat_22:00-22:30",
+  "sun_19:30-20:00",
+  "sun_20:00-20:30",
+  "sun_20:30-21:00",
+  "sun_21:00-21:30",
+  "sun_21:30-22:00",
+  "sun_22:00-22:30",
+] as const;
+
+export type TimeSlot = (typeof timeSlots)[number];
+
 // Event signups - tracks user participation per event
 export const eventSignups = sqliteTable(
   "event_signups",
@@ -106,6 +127,10 @@ export const eventSignups = sqliteTable(
     userId: integer("user_id")
       .notNull()
       .references(() => users.id, { onDelete: "cascade" }),
+    timeSlots: text("time_slots", { mode: "json" })
+      .notNull()
+      .$type<TimeSlot[]>(),
+    notes: text("notes"),
     signedUpAt: integer("signed_up_at", { mode: "timestamp" }).$defaultFn(
       () => new Date(),
     ),

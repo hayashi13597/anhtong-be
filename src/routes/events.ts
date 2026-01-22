@@ -23,9 +23,26 @@ async function createDefaultTeams(
   eventId: number,
 ) {
   const defaultTeams = [
-    { name: "Team Alpha", description: "First team" },
-    { name: "Team Beta", description: "Second team" },
-    { name: "Team Gamma", description: "Third team" },
+    // Saturday teams
+    {
+      name: "Team Top",
+      description: "Top lane team",
+      day: "saturday" as const,
+    },
+    {
+      name: "Team Mid",
+      description: "Mid lane team",
+      day: "saturday" as const,
+    },
+    {
+      name: "Team Bot",
+      description: "Bot lane team",
+      day: "saturday" as const,
+    },
+    // Sunday teams
+    { name: "Team Top", description: "Top lane team", day: "sunday" as const },
+    { name: "Team Mid", description: "Mid lane team", day: "sunday" as const },
+    { name: "Team Bot", description: "Bot lane team", day: "sunday" as const },
   ];
 
   for (const team of defaultTeams) {
@@ -33,6 +50,7 @@ async function createDefaultTeams(
       eventId,
       name: team.name,
       description: team.description,
+      day: team.day,
     });
   }
 }

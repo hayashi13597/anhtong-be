@@ -1,8 +1,8 @@
 {
   "version": "6",
   "dialect": "sqlite",
-  "id": "937f2be7-9fb3-4802-b34d-567339a41f70",
-  "prevId": "00000000-0000-0000-0000-000000000000",
+  "id": "9ae594fc-24dc-48f9-a675-4a34184a6b45",
+  "prevId": "937f2be7-9fb3-4802-b34d-567339a41f70",
   "tables": {
     "event_signups": {
       "name": "event_signups",
@@ -26,6 +26,13 @@
           "type": "text",
           "primaryKey": false,
           "notNull": true,
+          "autoincrement": false
+        },
+        "notes": {
+          "name": "notes",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
           "autoincrement": false
         },
         "signed_up_at": {

@@ -1,7 +1,13 @@
 import { and, eq } from "drizzle-orm";
 import { Hono } from "hono";
-import type { ClassType } from "../db/schema";
-import { classEnum, eventSignups, events, users } from "../db/schema";
+import type { ClassType, TimeSlot } from "../db/schema";
+import {
+  classEnum,
+  eventSignups,
+  events,
+  timeSlots,
+  users,
+} from "../db/schema";
 import type { Env } from "../index";
 import { authMiddleware, generateToken, verifyPassword } from "../lib/auth";
 import { createDb } from "../lib/db";
@@ -70,6 +76,8 @@ auth.post("/signup", async (c) => {
     primaryRole: "dps" | "healer" | "tank";
     secondaryRole?: "dps" | "healer" | "tank";
     region: "vn" | "na";
+    timeSlots: TimeSlot[];
+    notes?: string;
   }>();
 
   const {
@@ -79,6 +87,8 @@ auth.post("/signup", async (c) => {
     primaryRole,
     secondaryRole,
     region,
+    timeSlots: selectedTimeSlots,
+    notes,
   } = body;
 
   if (!username || !region || !primaryClass || !primaryRole) {
@@ -88,6 +98,18 @@ auth.post("/signup", async (c) => {
       },
       400,
     );
+  }
+
+  if (
+    !selectedTimeSlots ||
+    !Array.isArray(selectedTimeSlots) ||
+    selectedTimeSlots.length === 0
+  ) {
+    return c.json({ error: "At least one time slot must be selected" }, 400);
+  }
+
+  if (!selectedTimeSlots.every((slot) => timeSlots.includes(slot))) {
+    return c.json({ error: "Invalid time slot selected" }, 400);
   }
 
   if (!Array.isArray(primaryClass) || primaryClass.length !== 2) {
@@ -216,6 +238,8 @@ auth.post("/signup", async (c) => {
   await db.insert(eventSignups).values({
     eventId: event.id,
     userId: user.id,
+    timeSlots: selectedTimeSlots,
+    notes: notes || null,
   });
 
   return c.json(
