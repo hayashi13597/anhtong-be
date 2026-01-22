@@ -7,7 +7,7 @@
     {
       "binding": "DB",
       "database_name": "anhtong-guild-db",
-      "database_id": "832666f6-3b89-4a3d-984b-6bb412a09d3c",
+      "database_id": "bfa5eaeb-3799-46ef-b364-ff63cfaaa455",
       "migrations_dir": "drizzle/migrations",
     },
   ],

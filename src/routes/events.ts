@@ -97,23 +97,34 @@ eventsRouter.post(
 
 // Auto-create events for both regions (for cron trigger)
 eventsRouter.post("/auto-create-weekly", async (c) => {
-  // This endpoint can be called by Cloudflare Cron Trigger
-  // In production, you'd add authentication for cron calls
-  const db = createDb(c.env.DB);
+  try {
+    // This endpoint can be called by Cloudflare Cron Trigger
+    // In production, you'd add authentication for cron calls
+    const db = createDb(c.env.DB);
 
-  const vnResult = await createWeeklyEvent(db, "vn");
-  const naResult = await createWeeklyEvent(db, "na");
+    const vnResult = await createWeeklyEvent(db, "vn");
+    const naResult = await createWeeklyEvent(db, "na");
 
-  return c.json({
-    vn: {
-      created: vnResult.created,
-      event: vnResult.event,
-    },
-    na: {
-      created: naResult.created,
-      event: naResult.event,
-    },
-  });
+    return c.json({
+      vn: {
+        created: vnResult.created,
+        event: vnResult.event,
+      },
+      na: {
+        created: naResult.created,
+        event: naResult.event,
+      },
+    });
+  } catch (error) {
+    console.error("Error creating weekly events:", error);
+    return c.json(
+      {
+        error: "Failed to create weekly events",
+        message: error instanceof Error ? error.message : String(error),
+      },
+      500,
+    );
+  }
 });
 
 // Get all events (filtered by region for non-admin, or query param)
