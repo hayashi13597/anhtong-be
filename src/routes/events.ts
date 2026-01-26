@@ -4,7 +4,7 @@ import { events, teams } from "../db/schema";
 import type { Env } from "../index";
 import { adminMiddleware, authMiddleware } from "../lib/auth";
 import { createDb } from "../lib/db";
-import { getCurrentWeekMonday } from "../lib/utils";
+import { getCurrentWeekWednesday } from "../lib/utils";
 
 type Variables = {
   user: {
@@ -60,11 +60,11 @@ async function createWeeklyEvent(
   db: ReturnType<typeof createDb>,
   region: "vn" | "na",
 ) {
-  const monday = getCurrentWeekMonday();
+  const wednesday = getCurrentWeekWednesday();
 
   // Check if event already exists for this week and region
   const existingEvent = await db.query.events.findFirst({
-    where: and(eq(events.region, region), eq(events.weekStartDate, monday)),
+    where: and(eq(events.region, region), eq(events.weekStartDate, wednesday)),
   });
 
   if (existingEvent) {
@@ -76,7 +76,7 @@ async function createWeeklyEvent(
     .insert(events)
     .values({
       region,
-      weekStartDate: monday,
+      weekStartDate: wednesday,
     })
     .returning();
 
@@ -85,6 +85,32 @@ async function createWeeklyEvent(
 
   return { event: newEvent, created: true };
 }
+
+// Manual event creation (creates event immediately for admin's region)
+eventsRouter.post("/create", authMiddleware(), adminMiddleware(), async (c) => {
+  const db = createDb(c.env.DB);
+  const user = c.get("user");
+
+  // Admin can only create events for their region
+  const region = user.region as "vn" | "na";
+
+  // Create new event with current date
+  const [newEvent] = await db
+    .insert(events)
+    .values({
+      region,
+      weekStartDate: new Date(), // Use current date instead of Wednesday
+    })
+    .returning();
+
+  // Create default teams
+  await createDefaultTeams(db, newEvent.id);
+
+  return c.json(
+    { message: "Event created successfully", event: newEvent },
+    201,
+  );
+});
 
 // Trigger to create weekly events (should be called by a cron job on Mondays)
 eventsRouter.post(
@@ -166,19 +192,19 @@ eventsRouter.get("/", authMiddleware(), async (c) => {
   return c.json(eventsList);
 });
 
-// Get current week's event for user's region
-// Get current week's event (public - for signup form)
+// Get latest event for the region (public - for signup form)
 eventsRouter.get("/current/:region", async (c) => {
   const db = createDb(c.env.DB);
   const region = c.req.param("region") as "vn" | "na";
-  const monday = getCurrentWeekMonday();
 
   if (!region || !["vn", "na"].includes(region)) {
     return c.json({ error: "Region must be 'vn' or 'na'" }, 400);
   }
 
+  // Get the most recent event for this region
   const event = await db.query.events.findFirst({
-    where: and(eq(events.region, region), eq(events.weekStartDate, monday)),
+    where: eq(events.region, region),
+    orderBy: [desc(events.createdAt)],
     with: {
       signups: {
         with: {
@@ -198,23 +224,21 @@ eventsRouter.get("/current/:region", async (c) => {
   });
 
   if (!event) {
-    return c.json({ error: "No event found for current week" }, 404);
+    return c.json({ error: "No event found for this region" }, 404);
   }
 
   return c.json(event);
 });
 
-// Get current week's event for admin's region
+// Get latest event for admin's region
 eventsRouter.get("/current", authMiddleware(), async (c) => {
   const db = createDb(c.env.DB);
   const user = c.get("user");
-  const monday = getCurrentWeekMonday();
 
+  // Get the most recent event for this region
   const event = await db.query.events.findFirst({
-    where: and(
-      eq(events.region, user.region as "vn" | "na"),
-      eq(events.weekStartDate, monday),
-    ),
+    where: eq(events.region, user.region as "vn" | "na"),
+    orderBy: [desc(events.createdAt)],
     with: {
       signups: {
         with: {
@@ -234,7 +258,7 @@ eventsRouter.get("/current", authMiddleware(), async (c) => {
   });
 
   if (!event) {
-    return c.json({ error: "No event found for current week" }, 404);
+    return c.json({ error: "No event found for this region" }, 404);
   }
 
   return c.json(event);

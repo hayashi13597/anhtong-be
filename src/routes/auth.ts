@@ -1,4 +1,4 @@
-import { and, eq } from "drizzle-orm";
+import { and, desc, eq } from "drizzle-orm";
 import { Hono } from "hono";
 import type { ClassType, TimeSlot } from "../db/schema";
 import {
@@ -11,7 +11,6 @@ import {
 import type { Env } from "../index";
 import { authMiddleware, generateToken, verifyPassword } from "../lib/auth";
 import { createDb } from "../lib/db";
-import { getCurrentWeekMonday } from "../lib/utils";
 
 type Variables = {
   user: {
@@ -154,15 +153,15 @@ auth.post("/signup", async (c) => {
   }
 
   const db = createDb(c.env.DB);
-  const monday = getCurrentWeekMonday();
 
-  // Get current week's event for this region
+  // Get the most recent event for this region
   const event = await db.query.events.findFirst({
-    where: and(eq(events.region, region), eq(events.weekStartDate, monday)),
+    where: eq(events.region, region),
+    orderBy: [desc(events.createdAt)],
   });
 
   if (!event) {
-    return c.json({ error: "No event available for this week" }, 404);
+    return c.json({ error: "No event available for this region" }, 404);
   }
 
   // Check if user already exists
