@@ -25,6 +25,7 @@ export type ClassType = (typeof classEnum)[number];
 
 export const users = sqliteTable("users", {
   id: integer("id").primaryKey({ autoIncrement: true }),
+  discordId: text("discord_id").unique(),
   username: text("username").notNull().unique(),
   password: text("password"),
   isAdmin: integer("is_admin", { mode: "boolean" }).default(false),
