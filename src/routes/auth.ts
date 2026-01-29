@@ -212,6 +212,19 @@ auth.post("/signup", async (c) => {
   });
 
   if (existingSignup) {
+    await db
+      .update(eventSignups)
+      .set({
+        timeSlots: selectedTimeSlots,
+        notes: notes || null,
+      })
+      .where(
+        and(
+          eq(eventSignups.eventId, event.id),
+          eq(eventSignups.userId, user.id),
+        ),
+      );
+
     return c.json({
       message: "Đã đăng ký sự kiện này",
       user: {
@@ -430,6 +443,19 @@ auth.post("/discord/signup", async (c) => {
   });
 
   if (existingSignup) {
+    await db
+      .update(eventSignups)
+      .set({
+        timeSlots: selectedTimeSlots,
+        notes: notes || null,
+      })
+      .where(
+        and(
+          eq(eventSignups.eventId, event.id),
+          eq(eventSignups.userId, user.id),
+        ),
+      );
+
     return c.json({
       message: "Đã đăng ký sự kiện này",
       user: {
