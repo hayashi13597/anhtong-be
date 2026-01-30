@@ -15,6 +15,13 @@
       "when": 1769593039432,
       "tag": "0001_curved_blonde_phantom",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "6",
+      "when": 1769757641351,
+      "tag": "0002_mighty_leader",
+      "breakpoints": true
     }
   ]
 }

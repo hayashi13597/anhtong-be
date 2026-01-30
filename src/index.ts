@@ -2,10 +2,13 @@ import { Hono } from "hono";
 import { cors } from "hono/cors";
 import { logger } from "hono/logger";
 import { createDb } from "./lib/db";
-import authRoutes from "./routes/auth";
-import eventsRoutes from "./routes/events";
-import teamsRoutes from "./routes/teams";
-import usersRoutes from "./routes/users";
+import {
+  authController,
+  eventsController,
+  scheduleController,
+  teamsController,
+  usersController,
+} from "./modules";
 import { seedAdminUsers } from "./seed";
 
 export type Env = {
@@ -40,9 +43,10 @@ app.post("/seed", async (c) => {
 });
 
 // Routes
-app.route("/auth", authRoutes);
-app.route("/events", eventsRoutes);
-app.route("/teams", teamsRoutes);
-app.route("/users", usersRoutes);
+app.route("/auth", authController);
+app.route("/events", eventsController);
+app.route("/teams", teamsController);
+app.route("/users", usersController);
+app.route("/schedule", scheduleController);
 
 export default app;
