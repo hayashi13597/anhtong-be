@@ -5,21 +5,7 @@ import {
   sqliteTable,
   text,
 } from "drizzle-orm/sqlite-core";
-
-export const classEnum = [
-  "strategicSword",
-  "heavenquakerSpear",
-  "namelessSword",
-  "namelessSpear",
-  "vernalUmbrella",
-  "inkwellFan",
-  "soulshadeUmbrella",
-  "panaceaFan",
-  "thundercryBlade",
-  "stormreakerSpear",
-  "infernalTwinblades",
-  "mortalRopeDart",
-] as const;
+import { classEnum, timeSlots } from "../constants";
 
 export type ClassType = (typeof classEnum)[number];
 
@@ -100,22 +86,6 @@ export const teamMembers = sqliteTable(
 export type TeamMember = typeof teamMembers.$inferSelect;
 export type NewTeamMember = typeof teamMembers.$inferInsert;
 
-// Time slot type for event registration
-export const timeSlots = [
-  "sat_19:30-20:00",
-  "sat_20:00-20:30",
-  "sat_20:30-21:00",
-  "sat_21:00-21:30",
-  "sat_21:30-22:00",
-  "sat_22:00-22:30",
-  "sun_19:30-20:00",
-  "sun_20:00-20:30",
-  "sun_20:30-21:00",
-  "sun_21:00-21:30",
-  "sun_21:30-22:00",
-  "sun_22:00-22:30",
-] as const;
-
 export type TimeSlot = (typeof timeSlots)[number];
 
 // Event signups - tracks user participation per event
@@ -141,6 +111,30 @@ export const eventSignups = sqliteTable(
 
 export type EventSignup = typeof eventSignups.$inferSelect;
 export type NewEventSignup = typeof eventSignups.$inferInsert;
+
+// schedule notifications
+export const scheduledNotifications = sqliteTable("scheduled_notifications", {
+  id: integer("id").primaryKey({ autoIncrement: true }),
+  title: text("title").notNull(),
+  days: text("days", { mode: "json" }).$type<string[]>(),
+  region: text("region", { enum: ["vn", "na"] }).notNull(),
+  startTime: text("start_time").notNull(), // "HH:MM" format
+  endTime: text("end_time").notNull(), // "HH:MM" format
+  notifyBeforeMinutes: integer("notify_before_minutes").notNull(),
+  mentionRole: text("mention_role"),
+  channelId: text("channel_id").notNull(),
+  enabled: integer("enabled", { mode: "boolean" }).default(true),
+  createdAt: integer("created_at", { mode: "timestamp" }).$defaultFn(
+    () => new Date(),
+  ),
+});
+
+export type ScheduledNotification = typeof scheduledNotifications.$inferSelect;
+export type NewScheduledNotification =
+  typeof scheduledNotifications.$inferInsert;
+export type UpdateScheduledNotification = Partial<
+  Omit<ScheduledNotification, "id" | "createdAt" | "region">
+>;
 
 // Relations
 export const eventsRelations = relations(events, ({ many }) => ({
