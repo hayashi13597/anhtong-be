@@ -7,7 +7,7 @@ import { ScheduleService } from "./schedule.service";
 
 const scheduleController = new Hono<AppEnv>();
 
-scheduleController.get("/", authMiddleware(), adminMiddleware(), async (c) => {
+scheduleController.get("/", async (c) => {
   const db = createDb(c.env.DB);
   const scheduleRepository = new ScheduleRepository(db);
   const scheduleService = new ScheduleService(scheduleRepository);
