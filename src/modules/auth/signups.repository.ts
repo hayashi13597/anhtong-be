@@ -1,7 +1,8 @@
-import { and, eq } from "drizzle-orm";
+import { and, eq, inArray } from "drizzle-orm";
 import type { EventSignup, NewEventSignup, TimeSlot } from "../../db/schema";
-import { eventSignups } from "../../db/schema";
+import { eventSignups, events } from "../../db/schema";
 import type { Database } from "../../lib/db";
+import type { Region } from "../../types";
 
 export class SignupsRepository {
   constructor(private db: Database) {}
@@ -32,6 +33,22 @@ export class SignupsRepository {
       .set(data)
       .where(
         and(eq(eventSignups.eventId, eventId), eq(eventSignups.userId, userId)),
+      );
+  }
+
+  async deleteByUserAndRegion(userId: number, region: Region): Promise<void> {
+    const eventIds = this.db
+      .select({ id: events.id })
+      .from(events)
+      .where(eq(events.region, region));
+
+    await this.db
+      .delete(eventSignups)
+      .where(
+        and(
+          eq(eventSignups.userId, userId),
+          inArray(eventSignups.eventId, eventIds),
+        ),
       );
   }
 }

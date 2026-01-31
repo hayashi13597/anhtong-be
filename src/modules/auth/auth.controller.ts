@@ -4,6 +4,7 @@ import { authMiddleware } from "../../lib/auth";
 import { createDb } from "../../lib/db";
 import type { AppEnv, Region, Role } from "../../types";
 import { EventsRepository } from "../events/events.repository";
+import { TeamsRepository } from "../teams/teams.repository";
 import { UsersRepository } from "../users/users.repository";
 import { AuthService } from "./auth.service";
 import { SignupsRepository } from "./signups.repository";
@@ -16,10 +17,12 @@ authController.post("/login", async (c) => {
   const usersRepository = new UsersRepository(db);
   const eventsRepository = new EventsRepository(db);
   const signupsRepository = new SignupsRepository(db);
+  const teamsRepository = new TeamsRepository(db);
   const authService = new AuthService(
     usersRepository,
     eventsRepository,
     signupsRepository,
+    teamsRepository,
   );
 
   const { username, password } = await c.req.json<{
@@ -45,10 +48,12 @@ authController.post("/signup", async (c) => {
   const usersRepository = new UsersRepository(db);
   const eventsRepository = new EventsRepository(db);
   const signupsRepository = new SignupsRepository(db);
+  const teamsRepository = new TeamsRepository(db);
   const authService = new AuthService(
     usersRepository,
     eventsRepository,
     signupsRepository,
+    teamsRepository,
   );
 
   const body = await c.req.json<{
@@ -83,10 +88,12 @@ authController.post("/discord/signup", async (c) => {
   const usersRepository = new UsersRepository(db);
   const eventsRepository = new EventsRepository(db);
   const signupsRepository = new SignupsRepository(db);
+  const teamsRepository = new TeamsRepository(db);
   const authService = new AuthService(
     usersRepository,
     eventsRepository,
     signupsRepository,
+    teamsRepository,
   );
 
   const body = await c.req.json<{
@@ -122,10 +129,12 @@ authController.get("/me", authMiddleware(), async (c) => {
   const usersRepository = new UsersRepository(db);
   const eventsRepository = new EventsRepository(db);
   const signupsRepository = new SignupsRepository(db);
+  const teamsRepository = new TeamsRepository(db);
   const authService = new AuthService(
     usersRepository,
     eventsRepository,
     signupsRepository,
+    teamsRepository,
   );
   const currentUser = c.get("user");
 

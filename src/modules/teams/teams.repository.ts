@@ -87,4 +87,8 @@ export class TeamsRepository {
         and(eq(teamMembers.teamId, teamId), eq(teamMembers.userId, userId)),
       );
   }
+
+  async removeAllMembersForUser(userId: number): Promise<void> {
+    await this.db.delete(teamMembers).where(eq(teamMembers.userId, userId));
+  }
 }

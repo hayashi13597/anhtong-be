@@ -3,6 +3,7 @@ import type { ClassType, TimeSlot } from "../../db/schema";
 import { generateToken, verifyPassword } from "../../lib/auth";
 import type { Region, Role } from "../../types";
 import { EventsRepository } from "../events/events.repository";
+import { TeamsRepository } from "../teams/teams.repository";
 import { UsersRepository } from "../users/users.repository";
 import { SignupsRepository } from "./signups.repository";
 
@@ -31,6 +32,7 @@ export class AuthService {
     private usersRepository: UsersRepository,
     private eventsRepository: EventsRepository,
     private signupsRepository: SignupsRepository,
+    private teamsRepository: TeamsRepository,
   ) {}
 
   async login(dto: LoginDto) {
@@ -94,17 +96,22 @@ export class AuthService {
     let user = await this.usersRepository.findByUsername(username);
 
     if (user) {
-      // Check if user's region matches
+      await this.teamsRepository.removeAllMembersForUser(user.id);
+
       if (user.region !== region) {
-        throw new Error("Tên In-Game đã tồn tại ở khu vực khác");
+        await this.signupsRepository.deleteByUserAndRegion(
+          user.id,
+          user.region,
+        );
       }
 
-      // User exists - update their info
+      // User exists - update their info (including region if changed)
       user = await this.usersRepository.updateFull(user.id, {
         primaryClass,
         secondaryClass: secondaryClass || null,
         primaryRole,
         secondaryRole: secondaryRole || null,
+        region,
       });
     } else {
       // Create new user (no password for regular users)
@@ -220,12 +227,16 @@ export class AuthService {
     let user = userByDiscord || userByUsername;
 
     if (user) {
-      // Check if user's region matches
+      await this.teamsRepository.removeAllMembersForUser(user.id);
+
       if (user.region !== region) {
-        throw new Error("Tên In-Game đã tồn tại ở khu vực khác");
+        await this.signupsRepository.deleteByUserAndRegion(
+          user.id,
+          user.region,
+        );
       }
 
-      // User exists - update their info
+      // User exists - update their info (including region if changed)
       user = await this.usersRepository.updateFull(user.id, {
         discordId,
         username,
@@ -233,6 +244,7 @@ export class AuthService {
         secondaryClass: secondaryClass || null,
         primaryRole,
         secondaryRole: secondaryRole || null,
+        region,
       });
     } else {
       // Create new user (no password for regular users)
