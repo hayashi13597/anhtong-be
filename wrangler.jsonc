@@ -11,20 +11,7 @@
       "migrations_dir": "drizzle/migrations",
     },
   ],
-  // "compatibility_flags": [
-  //   "nodejs_compat"
-  // ],
   "vars": {
     "MY_VAR": "my-variable",
-  },
-  "observability": {
-    "enabled": true,
-    "logs": {
-      "enabled": true,
-      "invocation_logs": true,
-    },
-    "traces": {
-      "enabled": true,
-    },
   },
 }
